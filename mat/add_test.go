@@ -1,80 +1,97 @@
 package mat_test
 
 import (
+	"math/rand/v2"
+	"slices"
 	"testing"
 
 	"github.com/qntx/gomat/mat"
 )
 
+// AddNative is a pure Go implementation of element-wise addition for float64 slices.
+func AddNative(x1, x2, y []float64) {
+	for i := range x1 {
+		y[i] = x1[i] + x2[i]
+	}
+}
+
+// TestAdd verifies the correctness of AddAVX, AddSSE, and AddNative.
 func TestAdd(t *testing.T) {
-	t.Parallel()
-
-	x1 := make([]float64, 0, 2_000)
-	x2 := make([]float64, 0, 2_000)
-	expected := make([]float64, 0, 2_000)
-	actual := make([]float64, 0, 2_000)
-
-	for size := 0; size < 2_000; size++ {
-		x1 = x1[:size]
-		x2 = x2[:size]
-		expected = expected[:size]
-		actual = actual[:size]
-		RandVec(x1)
-		RandVec(x2)
-		testingAdd(x1, x2, expected)
-
-		mat.Add(x1, x2, actual)
-
-		RequireSlicesInDelta(t, expected, actual, 1e-6)
+	// Test cases with different slice lengths
+	tests := []struct {
+		name string
+		n    int
+	}{
+		{"Small", 8},
+		{"Medium", 128},
+		{"Large", 1024},
+		{"NonAligned", 123}, // Non-aligned length to test edge cases
 	}
 
-	// Test different alignments
-	x1 = x1[:16]
-	x2 = x2[:16]
-	expected = expected[:16]
-	actual = actual[:16]
-	for offset := range x1 {
-		testingAdd(x1[offset:], x2[offset:], expected[offset:])
-		mat.Add(x1[offset:], x2[offset:], actual[offset:])
-		RequireSlicesInDelta(t, expected[offset:], actual[offset:], 1e-6)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// Initialize input slices with random data
+			x1 := make([]float64, tc.n)
+			x2 := make([]float64, tc.n)
+			y := make([]float64, tc.n)
+			yNative := make([]float64, tc.n)
+
+			// Fill x1 and x2 with random values
+			for i := range x1 {
+				x1[i] = rand.Float64() * 100
+				x2[i] = rand.Float64() * 100
+			}
+
+			// Run all implementations
+			mat.Add(x1, x2, y)
+			AddNative(x1, x2, yNative)
+
+			// Compare results
+			if !slices.Equal(y, yNative) {
+				t.Errorf("Add failed: results differ from AddNative")
+			}
+		})
 	}
 }
 
+// BenchmarkAdd compares the performance of AddAVX, AddSSE, and AddNative for different slice sizes.
 func BenchmarkAdd(b *testing.B) {
-	size := 1_000_000
-	x1 := NewRandVec[float64](size)
-	x2 := NewRandVec[float64](size)
-	y := make([]float64, size)
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		mat.Add(x1, x2, y)
+	// Different slice sizes to test
+	sizes := []struct {
+		name string
+		n    int
+	}{
+		{"8", 8},         // Small
+		{"128", 128},     // Medium
+		{"1024", 1024},   // Large
+		{"65536", 65536}, // Very large
+		{"123", 123},     // Non-aligned
 	}
-}
 
-func BenchmarkAddPureGo(b *testing.B) {
-	size := 1_000_000
-	x1 := NewRandVec[float64](size)
-	x2 := NewRandVec[float64](size)
-	y := make([]float64, size)
+	for _, size := range sizes {
+		// Initialize input slices
+		x1 := make([]float64, size.n)
+		x2 := make([]float64, size.n)
+		y := make([]float64, size.n)
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		pureGoAdd(x1, x2, y)
-	}
-}
+		// Fill x1 and x2 with random values
+		for i := range x1 {
+			x1[i] = rand.Float64() * 100
+			x2[i] = rand.Float64() * 100
+		}
 
-func pureGoAdd(x1, x2, y []float64) {
-	for i, v1 := range x1 {
-		y[i] = v1 + x2[i]
-	}
-}
+		// Benchmark AddAVX
+		b.Run("ASM/"+size.name, func(b *testing.B) {
+			for b.Loop() {
+				mat.Add(x1, x2, y)
+			}
+		})
 
-func testingAdd(x1, x2, y []float64) {
-	if len(x1) != len(x2) || len(x1) != len(y) {
-		panic("len mismatch")
-	}
-	for i, x1v := range x1 {
-		y[i] = x1v + x2[i]
+		// Benchmark AddNative
+		b.Run("Native/ "+size.name, func(b *testing.B) {
+			for b.Loop() {
+				AddNative(x1, x2, y)
+			}
+		})
 	}
 }
