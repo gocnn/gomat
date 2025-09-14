@@ -8,6 +8,6 @@ Fast Go matrix ops via assembly.
 go get github.com/qntx/gomat
 ```
 
-## Licensegit
+## License
 
 MIT
