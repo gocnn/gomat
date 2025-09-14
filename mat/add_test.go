@@ -1,24 +1,18 @@
-package mat
+package mat_test
 
 import (
 	"testing"
+
+	"github.com/qntx/gomat/mat"
 )
 
-func TestAdd32(t *testing.T) {
-	testAdd(t, Add32, 1e-6)
-}
-
-func TestAdd64(t *testing.T) {
-	testAdd(t, Add64, 1e-6)
-}
-
-func testAdd[F Float](t *testing.T, fn func(x1, x2, y []F), eps float64) {
+func TestAdd(t *testing.T) {
 	t.Parallel()
 
-	x1 := make([]F, 0, 2_000)
-	x2 := make([]F, 0, 2_000)
-	expected := make([]F, 0, 2_000)
-	actual := make([]F, 0, 2_000)
+	x1 := make([]float64, 0, 2_000)
+	x2 := make([]float64, 0, 2_000)
+	expected := make([]float64, 0, 2_000)
+	actual := make([]float64, 0, 2_000)
 
 	for size := 0; size < 2_000; size++ {
 		x1 = x1[:size]
@@ -29,44 +23,54 @@ func testAdd[F Float](t *testing.T, fn func(x1, x2, y []F), eps float64) {
 		RandVec(x2)
 		testingAdd(x1, x2, expected)
 
-		fn(x1, x2, actual)
+		mat.Add(x1, x2, actual)
 
-		RequireSlicesInDelta(t, expected, actual, eps)
+		RequireSlicesInDelta(t, expected, actual, 1e-6)
 	}
 
-	// Try different alignments
+	// Test different alignments
 	x1 = x1[:16]
 	x2 = x2[:16]
 	expected = expected[:16]
 	actual = actual[:16]
 	for offset := range x1 {
 		testingAdd(x1[offset:], x2[offset:], expected[offset:])
-		fn(x1[offset:], x2[offset:], actual[offset:])
-		RequireSlicesInDelta(t, expected[offset:], actual[offset:], eps)
+		mat.Add(x1[offset:], x2[offset:], actual[offset:])
+		RequireSlicesInDelta(t, expected[offset:], actual[offset:], 1e-6)
 	}
 }
 
-func BenchmarkAdd32(b *testing.B) {
-	benchmarkAdd(b, Add32)
-}
-
-func BenchmarkAdd64(b *testing.B) {
-	benchmarkAdd(b, Add64)
-}
-
-func benchmarkAdd[F Float](b *testing.B, fn func(x1, x2, y []F)) {
+func BenchmarkAdd(b *testing.B) {
 	size := 1_000_000
-	x1 := NewRandVec[F](size)
-	x2 := NewRandVec[F](size)
-	y := make([]F, size)
+	x1 := NewRandVec[float64](size)
+	x2 := NewRandVec[float64](size)
+	y := make([]float64, size)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		fn(x1, x2, y)
+		mat.Add(x1, x2, y)
 	}
 }
 
-func testingAdd[F Float](x1, x2, y []F) {
+func BenchmarkAddPureGo(b *testing.B) {
+	size := 1_000_000
+	x1 := NewRandVec[float64](size)
+	x2 := NewRandVec[float64](size)
+	y := make([]float64, size)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		pureGoAdd(x1, x2, y)
+	}
+}
+
+func pureGoAdd(x1, x2, y []float64) {
+	for i, v1 := range x1 {
+		y[i] = v1 + x2[i]
+	}
+}
+
+func testingAdd(x1, x2, y []float64) {
 	if len(x1) != len(x2) || len(x1) != len(y) {
 		panic("len mismatch")
 	}

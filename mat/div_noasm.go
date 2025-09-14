@@ -2,17 +2,8 @@
 
 package mat
 
-// Div32 divides x1 by x2, element-wise, storing the result in y (32 bits).
-func Div32(x1, x2, y []float32) {
-	div(x1, x2, y)
-}
-
-// Div64 divides x1 by x2, element-wise, storing the result in y (64 bits).
-func Div64(x1, x2, y []float64) {
-	div(x1, x2, y)
-}
-
-func div[F float32 | float64](x1, x2, y []F) {
+// Div divides x1 by x2, element-wise, storing the result in y (64 bits).
+func Div(x1, x2, y []float64) {
 	if len(x1) == 0 {
 		return
 	}

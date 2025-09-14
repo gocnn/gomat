@@ -1,65 +1,72 @@
 package main
 
-//go:generate go run . -out ../../mat/dotprod_amd64.s -stubs ../../mat/dotprod_amd64.go -pkg mat
+//go:generate go run . -bits 64 -out ../../mat/dotprod_amd64.s -stubs ../../mat/dotprod_amd64.go -pkg mat
+//go:generate go run . -bits 32 -out ../../mat32/dotprod_amd64.s -stubs ../../mat32/dotprod_amd64.go -pkg mat32
 
 import (
+	"flag"
 	"fmt"
 
-	. "github.com/mmcloughlin/avo/build"
-	. "github.com/mmcloughlin/avo/operand"
-	. "github.com/mmcloughlin/avo/reg"
+	"github.com/mmcloughlin/avo/build"
+	"github.com/mmcloughlin/avo/operand"
+	"github.com/mmcloughlin/avo/reg"
 )
 
 func main() {
-	ConstraintExpr("amd64,gc,!purego")
+	var bits = flag.Int("bits", 64, "bits to generate")
+	flag.Parse()
 
-	buildAVX(32)
-	buildAVX(64)
+	build.ConstraintExpr("amd64,gc,!noasm,!gccgo")
 
-	buildSSE(32)
-	buildSSE(64)
+	if *bits == 32 {
+		buildAVX(32)
+		buildSSE(32)
+	} else {
+		buildAVX(64)
+		buildSSE(64)
+	}
 
-	Generate()
+	build.Generate()
 }
 
-type bitsToFuncOps map[int]func(...Op)
-type bitsToFunc2Ops map[int]func(Op, Op)
+type bitsToFuncOps map[int]func(...operand.Op)
+type bitsToFunc2Ops map[int]func(operand.Op, operand.Op)
 
 var (
-	ADDP       = bitsToFunc2Ops{32: ADDPS, 64: ADDPD}
-	ADDS       = bitsToFunc2Ops{32: ADDSS, 64: ADDSD}
-	HADDP      = bitsToFunc2Ops{32: HADDPS, 64: HADDPD}
-	MOVS       = bitsToFunc2Ops{32: MOVSS, 64: MOVSD}
-	MOVUP      = bitsToFunc2Ops{32: MOVUPS, 64: MOVUPD}
-	MULP       = bitsToFunc2Ops{32: MULPS, 64: MULPD}
-	MULS       = bitsToFunc2Ops{32: MULSS, 64: MULSD}
-	VADDP      = bitsToFuncOps{32: VADDPS, 64: VADDPD}
-	VFMADD231P = bitsToFuncOps{32: VFMADD231PS, 64: VFMADD231PD}
-	VFMADD231S = bitsToFuncOps{32: VFMADD231SS, 64: VFMADD231SD}
-	VMOVS      = bitsToFuncOps{32: VMOVSS, 64: VMOVSD}
-	VMOVUP     = bitsToFuncOps{32: VMOVUPS, 64: VMOVUPD}
-	VXORP      = bitsToFuncOps{32: VXORPS, 64: VXORPD}
-	XORP       = bitsToFunc2Ops{32: XORPS, 64: XORPD}
+	ADDP       = bitsToFunc2Ops{32: build.ADDPS, 64: build.ADDPD}
+	ADDS       = bitsToFunc2Ops{32: build.ADDSS, 64: build.ADDSD}
+	HADDP      = bitsToFunc2Ops{32: build.HADDPS, 64: build.HADDPD}
+	MOVS       = bitsToFunc2Ops{32: build.MOVSS, 64: build.MOVSD}
+	MOVUP      = bitsToFunc2Ops{32: build.MOVUPS, 64: build.MOVUPD}
+	MULP       = bitsToFunc2Ops{32: build.MULPS, 64: build.MULPD}
+	MULS       = bitsToFunc2Ops{32: build.MULSS, 64: build.MULSD}
+	VADDP      = bitsToFuncOps{32: build.VADDPS, 64: build.VADDPD}
+	VFMADD231P = bitsToFuncOps{32: build.VFMADD231PS, 64: build.VFMADD231PD}
+	VFMADD231S = bitsToFuncOps{32: build.VFMADD231SS, 64: build.VFMADD231SD}
+	VMOVS      = bitsToFuncOps{32: build.VMOVSS, 64: build.VMOVSD}
+	VMOVUP     = bitsToFuncOps{32: build.VMOVUPS, 64: build.VMOVUPD}
+	VXORP      = bitsToFuncOps{32: build.VXORPS, 64: build.VXORPD}
+	XORP       = bitsToFunc2Ops{32: build.XORPS, 64: build.XORPD}
 )
 
 func buildAVX(bits int) {
-	name := fmt.Sprintf("DotProdAVX%d", bits)
+	name := "DotProdAVX"
 	signature := fmt.Sprintf("func(x1, x2 []float%d) float%d", bits, bits)
-	TEXT(name, NOSPLIT, signature)
-	Pragma("noescape")
-	Doc(fmt.Sprintf("%s returns the dot product between x1 and x2 (%d bits, AVX required).", name, bits))
+	build.TEXT(name, build.NOSPLIT, signature)
+	build.Pragma("noescape")
+	build.Doc(fmt.Sprintf("%s returns the dot product between x1 and x2 (%d bits, AVX required).", name, bits))
 
-	x1 := Mem{Base: Load(Param("x1").Base(), GP64())}
-	x2 := Mem{Base: Load(Param("x2").Base(), GP64())}
-	n := Load(Param("x1").Len(), GP64())
+	x1 := operand.Mem{Base: build.Load(build.Param("x1").Base(), build.GP64())}
+	x2 := operand.Mem{Base: build.Load(build.Param("x2").Base(), build.GP64())}
+	n := build.Load(build.Param("x1").Len(), build.GP64())
 
 	// Accumulation registers.
 
 	// Accumulation registers. One could be sufficient,
 	// but alternating between two should improve pipelining.
-	acc := []VecVirtual{YMM(), YMM()}
+	acc := []reg.VecVirtual{build.YMM(), build.YMM()}
 
-	VZEROALL()
+	build.VZEROALL()
 
 	bytesPerRegister := 32 // size of one YMM register
 	bytesPerValue := bits / 8
@@ -73,21 +80,21 @@ func buildAVX(bits int) {
 	}
 
 	for unrollIndex, unroll := range unrolls {
-		Label(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex]))
+		build.Label(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex]))
 
 		blockItems := itemsPerRegister * unroll
 		blockBytesSize := bytesPerValue * blockItems
 
-		CMPQ(n, U32(blockItems))
+		build.CMPQ(n, operand.U32(blockItems))
 		if unrollIndex < len(unrolls)-1 {
-			JL(LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex+1])))
+			build.JL(operand.LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex+1])))
 		} else {
-			JL(LabelRef("tail"))
+			build.JL(operand.LabelRef("tail"))
 		}
 
-		x1Regs := make([]VecVirtual, unroll)
+		x1Regs := make([]reg.VecVirtual, unroll)
 		for i := range x1Regs {
-			x1Regs[i] = YMM()
+			x1Regs[i] = build.YMM()
 		}
 
 		for i, x1Reg := range x1Regs {
@@ -98,38 +105,38 @@ func buildAVX(bits int) {
 			VFMADD231P[bits](x2.Offset(bytesPerRegister*i), x1Reg, acc[i%len(acc)])
 		}
 
-		ADDQ(U32(blockBytesSize), x1.Base)
-		ADDQ(U32(blockBytesSize), x2.Base)
-		SUBQ(U32(blockItems), n)
+		build.ADDQ(operand.U32(blockBytesSize), x1.Base)
+		build.ADDQ(operand.U32(blockBytesSize), x2.Base)
+		build.SUBQ(operand.U32(blockItems), n)
 
-		JMP(LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex])))
+		build.JMP(operand.LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex])))
 	}
 
 	// ---
 
-	Label("tail")
+	build.Label("tail")
 
-	tail := XMM()
+	tail := build.XMM()
 	VXORP[bits](tail, tail, tail)
 
-	Label("tailLoop")
+	build.Label("tailLoop")
 
-	CMPQ(n, U32(0))
-	JE(LabelRef("reduce"))
+	build.CMPQ(n, operand.U32(0))
+	build.JE(operand.LabelRef("reduce"))
 
-	x1Reg := XMM()
+	x1Reg := build.XMM()
 	VMOVS[bits](x1, x1Reg)
 	VFMADD231S[bits](x2, x1Reg, tail)
 
-	ADDQ(U32(bits/8), x1.Base)
-	ADDQ(U32(bits/8), x2.Base)
-	DECQ(n)
+	build.ADDQ(operand.U32(bits/8), x1.Base)
+	build.ADDQ(operand.U32(bits/8), x2.Base)
+	build.DECQ(n)
 
-	JMP(LabelRef("tailLoop"))
+	build.JMP(operand.LabelRef("tailLoop"))
 
 	// ---
 
-	Label("reduce")
+	build.Label("reduce")
 
 	for i := 1; i < len(acc); i++ {
 		VADDP[bits](acc[0], acc[i], acc[0])
@@ -137,40 +144,40 @@ func buildAVX(bits int) {
 
 	result := acc[0].AsX()
 
-	top := XMM()
-	VEXTRACTF128(U8(1), acc[0], top)
+	top := build.XMM()
+	build.VEXTRACTF128(operand.U8(1), acc[0], top)
 	VADDP[bits](result, top, result)
 	VADDP[bits](result, tail, result)
 
 	switch bits {
 	case 32:
-		VHADDPS(result, result, result)
-		VHADDPS(result, result, result)
+		build.VHADDPS(result, result, result)
+		build.VHADDPS(result, result, result)
 	case 64:
-		VHADDPD(result, result, result)
+		build.VHADDPD(result, result, result)
 	default:
 		panic(fmt.Errorf("unexpected bits %d", bits))
 	}
 
-	Store(result, ReturnIndex(0))
+	build.Store(result, build.ReturnIndex(0))
 
-	RET()
+	build.RET()
 }
 
 func buildSSE(bits int) {
-	name := fmt.Sprintf("DotProdSSE%d", bits)
+	name := "DotProdSSE"
 	signature := fmt.Sprintf("func(x1, x2 []float%d) float%d", bits, bits)
-	TEXT(name, NOSPLIT, signature)
-	Pragma("noescape")
-	Doc(fmt.Sprintf("%s returns the dot product between x1 and x2 (%d bits, SSE required).", name, bits))
+	build.TEXT(name, build.NOSPLIT, signature)
+	build.Pragma("noescape")
+	build.Doc(fmt.Sprintf("%s returns the dot product between x1 and x2 (%d bits, SSE required).", name, bits))
 
-	x1 := Mem{Base: Load(Param("x1").Base(), GP64())}
-	x2 := Mem{Base: Load(Param("x2").Base(), GP64())}
-	n := Load(Param("x1").Len(), GP64())
+	x1 := operand.Mem{Base: build.Load(build.Param("x1").Base(), build.GP64())}
+	x2 := operand.Mem{Base: build.Load(build.Param("x2").Base(), build.GP64())}
+	n := build.Load(build.Param("x1").Len(), build.GP64())
 
 	// Accumulation registers. One could be sufficient,
 	// but alternating between two should improve pipelining.
-	acc := []VecVirtual{XMM(), XMM()}
+	acc := []reg.VecVirtual{build.XMM(), build.XMM()}
 
 	for _, reg := range acc {
 		XORP[bits](reg, reg)
@@ -178,50 +185,50 @@ func buildSSE(bits int) {
 
 	// x2 memory alignment
 
-	CMPQ(n, U32(0))
-	JE(LabelRef("reduce"))
+	build.CMPQ(n, operand.U32(0))
+	build.JE(operand.LabelRef("reduce"))
 
-	x2StartByte := GP64()
-	MOVQ(x2.Base, x2StartByte)
-	ANDQ(U32(15), x2StartByte)
-	JZ(LabelRef("unrolledLoops"))
+	x2StartByte := build.GP64()
+	build.MOVQ(x2.Base, x2StartByte)
+	build.ANDQ(operand.U32(15), x2StartByte)
+	build.JZ(operand.LabelRef("unrolledLoops"))
 
 	switch bits {
 	case 32:
 		shifts := x2StartByte
 		// 4 - floor(x2StartByte % 16 / 4)
-		XORQ(U32(15), shifts)
-		INCQ(shifts)
-		SHRQ(U8(2), shifts)
+		build.XORQ(operand.U32(15), shifts)
+		build.INCQ(shifts)
+		build.SHRQ(operand.U8(2), shifts)
 
-		Label("alignmentLoop")
+		build.Label("alignmentLoop")
 
-		reg := XMM()
+		reg := build.XMM()
 		MOVS[bits](x1, reg)
 		MULS[bits](x2, reg)
 		ADDS[bits](reg, acc[0])
 
-		ADDQ(U32(bits/8), x1.Base)
-		ADDQ(U32(bits/8), x2.Base)
-		DECQ(n)
-		JZ(LabelRef("reduce"))
+		build.ADDQ(operand.U32(bits/8), x1.Base)
+		build.ADDQ(operand.U32(bits/8), x2.Base)
+		build.DECQ(n)
+		build.JZ(operand.LabelRef("reduce"))
 
-		DECQ(shifts)
-		JNZ(LabelRef("alignmentLoop"))
+		build.DECQ(shifts)
+		build.JNZ(operand.LabelRef("alignmentLoop"))
 	case 64:
-		reg := XMM()
+		reg := build.XMM()
 		MOVS[bits](x1, reg)
 		MULS[bits](x2, reg)
 		ADDS[bits](reg, acc[0])
 
-		ADDQ(U32(bits/8), x1.Base)
-		ADDQ(U32(bits/8), x2.Base)
-		DECQ(n)
+		build.ADDQ(operand.U32(bits/8), x1.Base)
+		build.ADDQ(operand.U32(bits/8), x2.Base)
+		build.DECQ(n)
 	default:
 		panic(fmt.Errorf("unexpected bits %d", bits))
 	}
 
-	Label("unrolledLoops")
+	build.Label("unrolledLoops")
 
 	bytesPerRegister := 16 // size of one XMM register
 	bytesPerValue := bits / 8
@@ -235,21 +242,21 @@ func buildSSE(bits int) {
 	}
 
 	for unrollIndex, unroll := range unrolls {
-		Label(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex]))
+		build.Label(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex]))
 
 		blockItems := itemsPerRegister * unroll
 		blockBytesSize := bytesPerValue * blockItems
 
-		CMPQ(n, U32(blockItems))
+		build.CMPQ(n, operand.U32(blockItems))
 		if unrollIndex < len(unrolls)-1 {
-			JL(LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex+1])))
+			build.JL(operand.LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex+1])))
 		} else {
-			JL(LabelRef("tailLoop"))
+			build.JL(operand.LabelRef("tailLoop"))
 		}
 
-		xRegs := make([]VecVirtual, unroll)
+		xRegs := make([]reg.VecVirtual, unroll)
 		for i := range xRegs {
-			xRegs[i] = XMM()
+			xRegs[i] = build.XMM()
 		}
 
 		for i, xReg := range xRegs {
@@ -264,34 +271,34 @@ func buildSSE(bits int) {
 			ADDP[bits](xReg, acc[i%len(acc)])
 		}
 
-		ADDQ(U32(blockBytesSize), x1.Base)
-		ADDQ(U32(blockBytesSize), x2.Base)
-		SUBQ(U32(blockItems), n)
+		build.ADDQ(operand.U32(blockBytesSize), x1.Base)
+		build.ADDQ(operand.U32(blockBytesSize), x2.Base)
+		build.SUBQ(operand.U32(blockItems), n)
 
-		JMP(LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex])))
+		build.JMP(operand.LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex])))
 	}
 
 	// ---
 
-	Label("tailLoop")
+	build.Label("tailLoop")
 
-	CMPQ(n, U32(0))
-	JE(LabelRef("reduce"))
+	build.CMPQ(n, operand.U32(0))
+	build.JE(operand.LabelRef("reduce"))
 
-	xReg := XMM()
+	xReg := build.XMM()
 	MOVS[bits](x1, xReg)
 	MULS[bits](x2, xReg)
 	ADDS[bits](xReg, acc[0])
 
-	ADDQ(U32(bits/8), x1.Base)
-	ADDQ(U32(bits/8), x2.Base)
-	DECQ(n)
+	build.ADDQ(operand.U32(bits/8), x1.Base)
+	build.ADDQ(operand.U32(bits/8), x2.Base)
+	build.DECQ(n)
 
-	JMP(LabelRef("tailLoop"))
+	build.JMP(operand.LabelRef("tailLoop"))
 
 	// ---
 
-	Label("reduce")
+	build.Label("reduce")
 
 	result := acc[0]
 	for i := 1; i < len(acc); i++ {
@@ -308,7 +315,7 @@ func buildSSE(bits int) {
 		panic(fmt.Errorf("unexpected bits %d", bits))
 	}
 
-	Store(result, ReturnIndex(0))
+	build.Store(result, build.ReturnIndex(0))
 
-	RET()
+	build.RET()
 }

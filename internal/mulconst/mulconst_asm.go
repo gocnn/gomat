@@ -1,53 +1,60 @@
 package main
 
-//go:generate go run . -out ../../mat/mulconst_amd64.s -stubs ../../mat/mulconst_amd64.go -pkg mat
+//go:generate go run . -bits 64 -out ../../mat/mulconst_amd64.s -stubs ../../mat/mulconst_amd64.go -pkg mat
+//go:generate go run . -bits 32 -out ../../mat32/mulconst_amd64.s -stubs ../../mat32/mulconst_amd64.go -pkg mat32
 
 import (
+	"flag"
 	"fmt"
 
-	. "github.com/mmcloughlin/avo/build"
-	. "github.com/mmcloughlin/avo/operand"
-	. "github.com/mmcloughlin/avo/reg"
+	"github.com/mmcloughlin/avo/build"
+	"github.com/mmcloughlin/avo/operand"
+	"github.com/mmcloughlin/avo/reg"
 )
 
 func main() {
-	ConstraintExpr("amd64,gc,!purego")
+	var bits = flag.Int("bits", 64, "bits to generate")
+	flag.Parse()
 
-	buildAVX(32)
-	buildAVX(64)
+	build.ConstraintExpr("amd64,gc,!noasm,!gccgo")
 
-	buildSSE(32)
-	buildSSE(64)
+	if *bits == 32 {
+		buildAVX(32)
+		buildSSE(32)
+	} else {
+		buildAVX(64)
+		buildSSE(64)
+	}
 
-	Generate()
+	build.Generate()
 }
 
 var (
-	MOVS        = map[int]func(Op, Op){32: MOVSS, 64: MOVSD}
-	MOVUP       = map[int]func(Op, Op){32: MOVUPS, 64: MOVUPD}
-	MULP        = map[int]func(Op, Op){32: MULPS, 64: MULPD}
-	MULS        = map[int]func(Op, Op){32: MULSS, 64: MULSD}
-	SHUFP       = map[int]func(Op, Op, Op){32: SHUFPS, 64: SHUFPD}
-	VBROADCASTS = map[int]func(...Op){32: VBROADCASTSS, 64: VBROADCASTSD}
-	VMOVUP      = map[int]func(...Op){32: VMOVUPS, 64: VMOVUPD}
-	VMULP       = map[int]func(...Op){32: VMULPS, 64: VMULPD}
+	MOVS        = map[int]func(operand.Op, operand.Op){32: build.MOVSS, 64: build.MOVSD}
+	MOVUP       = map[int]func(operand.Op, operand.Op){32: build.MOVUPS, 64: build.MOVUPD}
+	MULP        = map[int]func(operand.Op, operand.Op){32: build.MULPS, 64: build.MULPD}
+	MULS        = map[int]func(operand.Op, operand.Op){32: build.MULSS, 64: build.MULSD}
+	SHUFP       = map[int]func(operand.Op, operand.Op, operand.Op){32: build.SHUFPS, 64: build.SHUFPD}
+	VBROADCASTS = map[int]func(...operand.Op){32: build.VBROADCASTSS, 64: build.VBROADCASTSD}
+	VMOVUP      = map[int]func(...operand.Op){32: build.VMOVUPS, 64: build.VMOVUPD}
+	VMULP       = map[int]func(...operand.Op){32: build.VMULPS, 64: build.VMULPD}
 
 	unrolls = []int{14, 8, 4, 1}
 )
 
 func buildAVX(bits int) {
-	name := fmt.Sprintf("MulConstAVX%d", bits)
+	name := "MulConstAVX"
 	signature := fmt.Sprintf("func(c float%d, x, y []float%d)", bits, bits)
-	TEXT(name, NOSPLIT, signature)
-	Pragma("noescape")
-	Doc(fmt.Sprintf("%s multiplies each element of x by a constant value c, storing the result in y (%d bits, AVX required).", name, bits))
+	build.TEXT(name, build.NOSPLIT, signature)
+	build.Pragma("noescape")
+	build.Doc(fmt.Sprintf("%s multiplies each element of x by a constant value c, storing the result in y (%d bits, AVX required).", name, bits))
 
-	c := Load(Param("c"), XMM())
-	x := Mem{Base: Load(Param("x").Base(), GP64())}
-	y := Mem{Base: Load(Param("y").Base(), GP64())}
-	n := Load(Param("x").Len(), GP64())
+	c := build.Load(build.Param("c"), build.XMM())
+	x := operand.Mem{Base: build.Load(build.Param("x").Base(), build.GP64())}
+	y := operand.Mem{Base: build.Load(build.Param("y").Base(), build.GP64())}
+	n := build.Load(build.Param("x").Len(), build.GP64())
 
-	cy := YMM()
+	cy := build.YMM()
 	VBROADCASTS[bits](c, cy)
 
 	bytesPerRegister := 32 // size of one YMM register
@@ -55,21 +62,21 @@ func buildAVX(bits int) {
 	itemsPerRegister := 8 * bytesPerRegister / bits // 4 64-bit values, or 8 32-bit values
 
 	for unrollIndex, unroll := range unrolls {
-		Label(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex]))
+		build.Label(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex]))
 
 		blockItems := itemsPerRegister * unroll
 		blockBytesSize := bytesPerValue * blockItems
 
-		CMPQ(n, U32(blockItems))
+		build.CMPQ(n, operand.U32(blockItems))
 		if unrollIndex < len(unrolls)-1 {
-			JL(LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex+1])))
+			build.JL(operand.LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex+1])))
 		} else {
-			JL(LabelRef("tailLoop"))
+			build.JL(operand.LabelRef("tailLoop"))
 		}
 
-		regs := make([]VecVirtual, unroll)
+		regs := make([]reg.VecVirtual, unroll)
 		for i := range regs {
-			regs[i] = YMM()
+			regs[i] = build.YMM()
 		}
 
 		for i, r := range regs {
@@ -79,71 +86,71 @@ func buildAVX(bits int) {
 			VMOVUP[bits](r, y.Offset(bytesPerRegister*i))
 		}
 
-		ADDQ(U32(blockBytesSize), x.Base)
-		ADDQ(U32(blockBytesSize), y.Base)
-		SUBQ(U32(blockItems), n)
+		build.ADDQ(operand.U32(blockBytesSize), x.Base)
+		build.ADDQ(operand.U32(blockBytesSize), y.Base)
+		build.SUBQ(operand.U32(blockItems), n)
 
-		JMP(LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex])))
+		build.JMP(operand.LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex])))
 	}
 
 	// ---
 
-	Label("tailLoop")
+	build.Label("tailLoop")
 
-	r := XMM()
+	r := build.XMM()
 
-	CMPQ(n, U32(0))
-	JE(LabelRef("end"))
+	build.CMPQ(n, operand.U32(0))
+	build.JE(operand.LabelRef("end"))
 
 	MOVS[bits](x, r)
 	MULS[bits](c, r)
 	MOVS[bits](r, y)
 
-	ADDQ(U32(bits/8), x.Base)
-	ADDQ(U32(bits/8), y.Base)
-	DECQ(n)
+	build.ADDQ(operand.U32(bits/8), x.Base)
+	build.ADDQ(operand.U32(bits/8), y.Base)
+	build.DECQ(n)
 
-	JMP(LabelRef("tailLoop"))
+	build.JMP(operand.LabelRef("tailLoop"))
 
-	Label("end")
+	build.Label("end")
 
-	RET()
+	build.RET()
 }
 
 func buildSSE(bits int) {
-	name := fmt.Sprintf("MulConstSSE%d", bits)
+	name := "MulConstSSE"
 	signature := fmt.Sprintf("func(c float%d, x, y []float%d)", bits, bits)
-	TEXT(name, NOSPLIT, signature)
-	Pragma("noescape")
-	Doc(fmt.Sprintf("%s multiplies each element of x by a constant value c, storing the result in y (%d bits, SSE required).", name, bits))
+	build.TEXT(name, build.NOSPLIT, signature)
+	build.Pragma("noescape")
+	build.Doc(fmt.Sprintf("%s multiplies each element of x by a constant value c, storing the result in y (%d bits, SSE required).", name, bits))
 
-	c := Load(Param("c"), XMM())
-	x := Mem{Base: Load(Param("x").Base(), GP64())}
-	y := Mem{Base: Load(Param("y").Base(), GP64())}
-	n := Load(Param("x").Len(), GP64())
+	c := build.Load(build.Param("c"), build.XMM())
+	x := operand.Mem{Base: build.Load(build.Param("x").Base(), build.GP64())}
+	y := operand.Mem{Base: build.Load(build.Param("y").Base(), build.GP64())}
+	n := build.Load(build.Param("x").Len(), build.GP64())
 
-	SHUFP[bits](U8(0), c, c)
+	SHUFP[bits](operand.U8(0), c, c)
 
 	bytesPerRegister := 16 // size of one XMM register
 	bytesPerValue := bits / 8
 	itemsPerRegister := 8 * bytesPerRegister / bits // 2 64-bit values, or 4 32-bit values
 
 	for unrollIndex, unroll := range unrolls {
-		Label(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex]))
+		build.Label(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex]))
 
 		blockItems := itemsPerRegister * unroll
 		blockBytesSize := bytesPerValue * blockItems
 
-		CMPQ(n, U32(blockItems))
+		build.CMPQ(n, operand.U32(blockItems))
 		if unrollIndex < len(unrolls)-1 {
-			JL(LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex+1])))
+			build.JL(operand.LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex+1])))
 		} else {
-			JL(LabelRef("tailLoop"))
+			build.JL(operand.LabelRef("tailLoop"))
 		}
 
-		regs := make([]VecVirtual, unroll)
+		regs := make([]reg.VecVirtual, unroll)
 		for i := range regs {
-			regs[i] = XMM()
+			regs[i] = build.XMM()
 		}
 
 		for i, r := range regs {
@@ -156,32 +163,32 @@ func buildSSE(bits int) {
 			MOVUP[bits](r, y.Offset(bytesPerRegister*i))
 		}
 
-		ADDQ(U32(blockBytesSize), x.Base)
-		ADDQ(U32(blockBytesSize), y.Base)
-		SUBQ(U32(blockItems), n)
+		build.ADDQ(operand.U32(blockBytesSize), x.Base)
+		build.ADDQ(operand.U32(blockBytesSize), y.Base)
+		build.SUBQ(operand.U32(blockItems), n)
 
-		JMP(LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex])))
+		build.JMP(operand.LabelRef(fmt.Sprintf("unrolledLoop%d", unrolls[unrollIndex])))
 	}
 
 	// ---
 
-	Label("tailLoop")
+	build.Label("tailLoop")
 
-	r := XMM()
+	r := build.XMM()
 
-	CMPQ(n, U32(0))
-	JE(LabelRef("end"))
+	build.CMPQ(n, operand.U32(0))
+	build.JE(operand.LabelRef("end"))
 
 	MOVS[bits](x, r)
 	MULS[bits](c, r)
 	MOVS[bits](r, y)
 
-	ADDQ(U32(bits/8), x.Base)
-	ADDQ(U32(bits/8), y.Base)
-	DECQ(n)
+	build.ADDQ(operand.U32(bits/8), x.Base)
+	build.ADDQ(operand.U32(bits/8), y.Base)
+	build.DECQ(n)
 
-	JMP(LabelRef("tailLoop"))
+	build.JMP(operand.LabelRef("tailLoop"))
 
-	Label("end")
-	RET()
+	build.Label("end")
+	build.RET()
 }

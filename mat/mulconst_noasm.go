@@ -2,17 +2,8 @@
 
 package mat
 
-// MulConst32 multiplies each element of x by a constant value c, storing the result in y (32 bits).
-func MulConst32(c float32, x, y []float32) {
-	mulConst(c, x, y)
-}
-
-// MulConst64 multiplies each element of x by a constant value c, storing the result in y (64 bits).
-func MulConst64(c float64, x, y []float64) {
-	mulConst(c, x, y)
-}
-
-func mulConst[F float32 | float64](c F, x, y []F) {
+// MulConst multiplies each element of x by a constant value c, storing the result in y (64 bits).
+func MulConst(c float64, x, y []float64) {
 	if len(x) == 0 {
 		return
 	}

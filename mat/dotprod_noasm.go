@@ -2,23 +2,15 @@
 
 package mat
 
-// DotProd32 returns the dot product between x1 and x2 (32 bits).
-func DotProd32(x1, x2 []float32) float32 {
-	return dotProd(x1, x2)
-}
-
-// DotProd64 returns the dot product between x1 and x2 (64 bits).
-func DotProd64(x1, x2 []float64) float64 {
-	return dotProd(x1, x2)
-}
-
-func dotProd[F float32 | float64](x1, x2 []F) (y F) {
+// DotProd returns the dot product between x1 and x2 (64 bits).
+func DotProd(x1, x2 []float64) float64 {
 	if len(x1) == 0 {
-		return
+		return 0
 	}
 	_ = x2[len(x1)-1]
+	var y float64
 	for i, x1v := range x1 {
 		y += x1v * x2[i]
 	}
-	return
+	return y
 }
