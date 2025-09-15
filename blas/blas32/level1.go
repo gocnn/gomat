@@ -1,4 +1,4 @@
-// Copyright ©2015 The Gonum Authors. All rights reserved.
+// Copyright 2015 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,10 +11,10 @@ import (
 	"github.com/qntx/gomat/internal/mat/f32"
 )
 
-// Saxpy adds alpha times x to y
+// Axpy adds alpha times x to y
 //
 //	y[i] += alpha * x[i] for all i
-func Saxpy(n int, alpha float32, x []float32, incX int, y []float32, incY int) {
+func Axpy(n int, alpha float32, x []float32, incX int, y []float32, incY int) {
 	if incX == 0 {
 		panic(blas.ErrZeroIncX)
 	}
@@ -50,12 +50,12 @@ func Saxpy(n int, alpha float32, x []float32, incX int, y []float32, incY int) {
 	f32.AxpyInc(alpha, x, y, uintptr(n), uintptr(incX), uintptr(incY), uintptr(ix), uintptr(iy))
 }
 
-// Sscal scales x by alpha.
+// Scal scales x by alpha.
 //
 //	x[i] *= alpha
 //
-// Sscal has no effect if incX < 0.
-func Sscal(n int, alpha float32, x []float32, incX int) {
+// Scal has no effect if incX < 0.
+func Scal(n int, alpha float32, x []float32, incX int) {
 	if incX < 1 {
 		if incX == 0 {
 			panic(blas.ErrZeroIncX)
@@ -91,10 +91,10 @@ func Sscal(n int, alpha float32, x []float32, incX int) {
 	f32.ScalInc(alpha, x, uintptr(n), uintptr(incX))
 }
 
-// Scopy copies the elements of x into the elements of y.
+// Copy copies the elements of x into the elements of y.
 //
 //	y[i] = x[i] for all i
-func Scopy(n int, x []float32, incX int, y []float32, incY int) {
+func Copy(n int, x []float32, incX int, y []float32, incY int) {
 	if incX == 0 {
 		panic(blas.ErrZeroIncX)
 	}
@@ -131,10 +131,10 @@ func Scopy(n int, x []float32, incX int, y []float32, incY int) {
 	}
 }
 
-// Sswap exchanges the elements of two vectors.
+// Swap exchanges the elements of two vectors.
 //
 //	x[i], y[i] = y[i], x[i] for all i
-func Sswap(n int, x []float32, incX int, y []float32, incY int) {
+func Swap(n int, x []float32, incX int, y []float32, incY int) {
 	if incX == 0 {
 		panic(blas.ErrZeroIncX)
 	}
@@ -174,10 +174,10 @@ func Sswap(n int, x []float32, incX int, y []float32, incY int) {
 	}
 }
 
-// Sdot computes the dot product of the two vectors
+// Dot computes the dot product of the two vectors
 //
 //	\sum_i x[i]*y[i]
-func Sdot(n int, x []float32, incX int, y []float32, incY int) float32 {
+func Dot(n int, x []float32, incX int, y []float32, incY int) float32 {
 	if incX == 0 {
 		panic(blas.ErrZeroIncX)
 	}
@@ -215,12 +215,12 @@ func Sdot(n int, x []float32, incX int, y []float32, incY int) float32 {
 	return f32.DotInc(x, y, uintptr(n), uintptr(incX), uintptr(incY), uintptr(ix), uintptr(iy))
 }
 
-// Snrm2 computes the Euclidean norm of a vector,
+// Nrm2 computes the Euclidean norm of a vector,
 //
 //	sqrt(\sum_i x[i] * x[i]).
 //
 // This function returns 0 if incX is negative.
-func Snrm2(n int, x []float32, incX int) float32 {
+func Nrm2(n int, x []float32, incX int) float32 {
 	if incX < 1 {
 		if incX == 0 {
 			panic(blas.ErrZeroIncX)
@@ -245,12 +245,12 @@ func Snrm2(n int, x []float32, incX int) float32 {
 	return f32.L2NormInc(x, uintptr(n), uintptr(incX))
 }
 
-// Sasum computes the sum of the absolute values of the elements of x.
+// Asum computes the sum of the absolute values of the elements of x.
 //
 //	\sum_i |x[i]|
 //
-// Sasum returns 0 if incX is negative.
-func Sasum(n int, x []float32, incX int) float32 {
+// Asum returns 0 if incX is negative.
+func Asum(n int, x []float32, incX int) float32 {
 	var sum float32
 	if n < 0 {
 		panic(blas.ErrNLT0)
@@ -277,10 +277,10 @@ func Sasum(n int, x []float32, incX int) float32 {
 	return sum
 }
 
-// Isamax returns the index of an element of x with the largest absolute value.
+// Iamax returns the index of an element of x with the largest absolute value.
 // If there are multiple such indices the earliest is returned.
-// Isamax returns -1 if n == 0.
-func Isamax(n int, x []float32, incX int) int {
+// Iamax returns -1 if n == 0.
+func Iamax(n int, x []float32, incX int) int {
 	if incX < 1 {
 		if incX == 0 {
 			panic(blas.ErrZeroIncX)
@@ -324,7 +324,7 @@ func Isamax(n int, x []float32, incX int) int {
 	return idx
 }
 
-// Srotg computes a plane rotation
+// Rotg computes a plane rotation
 //
 //	⎡  c s ⎤ ⎡ a ⎤ = ⎡ r ⎤
 //	⎣ -s c ⎦ ⎣ b ⎦   ⎣ 0 ⎦
@@ -353,10 +353,10 @@ func Isamax(n int, x []float32, incX int) int {
 //	If |z| > 1, set c = 1/z and s = sqrt(1 - c^2).
 //
 // NOTE: There is a discrepancy between the reference implementation and the
-// BLAS technical manual regarding the sign for r when a or b are zero. Srotg
+// BLAS technical manual regarding the sign for r when a or b are zero. Rotg
 // agrees with the definition in the manual and other common BLAS
 // implementations.
-func Srotg(a, b float32) (c, s, r, z float32) {
+func Rotg(a, b float32) (c, s, r, z float32) {
 	// Implementation based on Supplemental Material to:
 	// Edward Anderson. 2017. Algorithm 978: Safe Scaling in the Level 1 BLAS.
 	// ACM Trans. Math. Softw. 44, 1, Article 12 (July 2017), 28 pages.
@@ -404,11 +404,11 @@ func Srotg(a, b float32) (c, s, r, z float32) {
 	return c, s, r, z
 }
 
-// Srot applies a plane transformation.
+// Rot applies a plane transformation.
 //
 //	x[i] = c * x[i] + s * y[i]
 //	y[i] = c * y[i] - s * x[i]
-func Srot(n int, x []float32, incX int, y []float32, incY int, c float32, s float32) {
+func Rot(n int, x []float32, incX int, y []float32, incY int, c float32, s float32) {
 	if incX == 0 {
 		panic(blas.ErrZeroIncX)
 	}
@@ -451,11 +451,11 @@ func Srot(n int, x []float32, incX int, y []float32, incY int, c float32, s floa
 	}
 }
 
-// Srotmg computes the modified Givens rotation. See
+// Rotmg computes the modified Givens rotation. See
 // http://www.netlib.org/lapack/explore-html/df/deb/drotmg_8f.html
 // for more details.
-func Srotmg(d1, d2, x1, y1 float32) (p blas.SrotmParams, rd1, rd2, rx1 float32) {
-	// The implementation of Drotmg used here is taken from Hopkins 1997
+func Rotmg(d1, d2, x1, y1 float32) (p blas.SrotmParams, rd1, rd2, rx1 float32) {
+	// The implementation of Rotmg used here is taken from Hopkins 1997
 	// Appendix A: https://doi.org/10.1145/289251.289253
 	// with the exception of the gam constants below.
 
@@ -561,8 +561,8 @@ func Srotmg(d1, d2, x1, y1 float32) (p blas.SrotmParams, rd1, rd2, rx1 float32) 
 	return p, d1, d2, x1
 }
 
-// Srotm applies the modified Givens rotation to the 2×n matrix.
-func Srotm(n int, x []float32, incX int, y []float32, incY int, p blas.SrotmParams) {
+// Rotm applies the modified Givens rotation to the 2×n matrix.
+func Rotm(n int, x []float32, incX int, y []float32, incY int, p blas.SrotmParams) {
 	if incX == 0 {
 		panic(blas.ErrZeroIncX)
 	}

@@ -12,7 +12,7 @@ import (
 	"github.com/qntx/gomat/internal/mat/f64"
 )
 
-// Dgemm performs one of the matrix-matrix operations
+// Gemm performs one of the matrix-matrix operations
 //
 //	C = alpha * A * B + beta * C
 //	C = alpha * Aᵀ * B + beta * C
@@ -22,7 +22,7 @@ import (
 // where A is an m×k or k×m dense matrix, B is an n×k or k×n dense matrix, C is
 // an m×n matrix, and alpha and beta are scalars. tA and tB specify whether A or
 // B are transposed.
-func Dgemm(tA, tB blas.Transpose, m, n, k int, alpha float64, a []float64, lda int, b []float64, ldb int, beta float64, c []float64, ldc int) {
+func Gemm(tA, tB blas.Transpose, m, n, k int, alpha float64, a []float64, lda int, b []float64, ldb int, beta float64, c []float64, ldc int) {
 	switch tA {
 	default:
 		panic(blas.ErrBadTranspose)
@@ -152,8 +152,8 @@ func dgemmParallel(aTrans, bTrans bool, m, n, k int, a []float64, lda int, b []f
 	// cache misses.
 
 	maxKLen := k
-	parBlocks := blocks(m, blockSize) * blocks(n, blockSize)
-	if parBlocks < minParBlock {
+	parBlocks := blas.Blocks(m, blas.BlockSize) * blas.Blocks(n, blas.BlockSize)
+	if parBlocks < blas.MinParBlock {
 		// The matrix multiplication is small in the dimensions where it can be
 		// computed concurrently. Just do it in serial.
 		dgemmSerial(aTrans, bTrans, m, n, k, a, lda, b, ldb, c, ldc, alpha)
@@ -169,8 +169,8 @@ func dgemmParallel(aTrans, bTrans bool, m, n, k int, a []float64, lda int, b []f
 	wg.Add(parBlocks)
 	defer wg.Wait()
 
-	for i := 0; i < m; i += blockSize {
-		for j := 0; j < n; j += blockSize {
+	for i := 0; i < m; i += blas.BlockSize {
+		for j := 0; j < n; j += blas.BlockSize {
 			workerLimit <- struct{}{}
 			go func(i, j int) {
 				defer func() {
@@ -178,11 +178,11 @@ func dgemmParallel(aTrans, bTrans bool, m, n, k int, a []float64, lda int, b []f
 					<-workerLimit
 				}()
 
-				leni := blockSize
+				leni := blas.BlockSize
 				if i+leni > m {
 					leni = m - i
 				}
-				lenj := blockSize
+				lenj := blas.BlockSize
 				if j+lenj > n {
 					lenj = n - j
 				}
@@ -190,8 +190,8 @@ func dgemmParallel(aTrans, bTrans bool, m, n, k int, a []float64, lda int, b []f
 				cSub := sliceView64(c, ldc, i, j, leni, lenj)
 
 				// Compute A_ik B_kj for all k
-				for k := 0; k < maxKLen; k += blockSize {
-					lenk := blockSize
+				for k := 0; k < maxKLen; k += blas.BlockSize {
+					lenk := blas.BlockSize
 					if k+lenk > maxKLen {
 						lenk = maxKLen - k
 					}
@@ -296,14 +296,14 @@ func sliceView64(a []float64, lda, i, j, r, c int) []float64 {
 	return a[i*lda+j : (i+r-1)*lda+j+c]
 }
 
-// Dsymm performs one of the matrix-matrix operations
+// Symm performs one of the matrix-matrix operations
 //
 //	C = alpha * A * B + beta * C  if side == blas.Left
 //	C = alpha * B * A + beta * C  if side == blas.Right
 //
 // where A is an n×n or m×m symmetric matrix, B and C are m×n matrices, and alpha
 // is a scalar.
-func Dsymm(s blas.Side, ul blas.Uplo, m, n int, alpha float64, a []float64, lda int, b []float64, ldb int, beta float64, c []float64, ldc int) {
+func Symm(s blas.Side, ul blas.Uplo, m, n int, alpha float64, a []float64, lda int, b []float64, ldb int, beta float64, c []float64, ldc int) {
 	if s != blas.Right && s != blas.Left {
 		panic(blas.ErrBadSide)
 	}
@@ -441,7 +441,7 @@ func Dsymm(s blas.Side, ul blas.Uplo, m, n int, alpha float64, a []float64, lda 
 	}
 }
 
-// Dtrmm performs one of the matrix-matrix operations
+// Trmm performs one of the matrix-matrix operations
 //
 //	B = alpha * A * B   if tA == blas.NoTrans and side == blas.Left
 //	B = alpha * Aᵀ * B  if tA == blas.Trans or blas.ConjTrans, and side == blas.Left
@@ -449,7 +449,7 @@ func Dsymm(s blas.Side, ul blas.Uplo, m, n int, alpha float64, a []float64, lda 
 //	B = alpha * B * Aᵀ  if tA == blas.Trans or blas.ConjTrans, and side == blas.Right
 //
 // where A is an n×n or m×m triangular matrix, B is an m×n matrix, and alpha is a scalar.
-func Dtrmm(s blas.Side, ul blas.Uplo, tA blas.Transpose, d blas.Diag, m, n int, alpha float64, a []float64, lda int, b []float64, ldb int) {
+func Trmm(s blas.Side, ul blas.Uplo, tA blas.Transpose, d blas.Diag, m, n int, alpha float64, a []float64, lda int, b []float64, ldb int) {
 	if s != blas.Left && s != blas.Right {
 		panic(blas.ErrBadSide)
 	}
@@ -639,7 +639,7 @@ func Dtrmm(s blas.Side, ul blas.Uplo, tA blas.Transpose, d blas.Diag, m, n int, 
 	}
 }
 
-// Dtrsm solves one of the matrix equations
+// Trsm solves one of the matrix equations
 //
 //	A * X = alpha * B   if tA == blas.NoTrans and side == blas.Left
 //	Aᵀ * X = alpha * B  if tA == blas.Trans or blas.ConjTrans, and side == blas.Left
@@ -653,7 +653,7 @@ func Dtrmm(s blas.Side, ul blas.Uplo, tA blas.Transpose, d blas.Diag, m, n int, 
 // stored in-place into X.
 //
 // No check is made that A is invertible.
-func Dtrsm(s blas.Side, ul blas.Uplo, tA blas.Transpose, d blas.Diag, m, n int, alpha float64, a []float64, lda int, b []float64, ldb int) {
+func Trsm(s blas.Side, ul blas.Uplo, tA blas.Transpose, d blas.Diag, m, n int, alpha float64, a []float64, lda int, b []float64, ldb int) {
 	if s != blas.Left && s != blas.Right {
 		panic(blas.ErrBadSide)
 	}
@@ -844,14 +844,14 @@ func Dtrsm(s blas.Side, ul blas.Uplo, tA blas.Transpose, d blas.Diag, m, n int, 
 	}
 }
 
-// Dsyrk performs one of the symmetric rank-k operations
+// Syrk performs one of the symmetric rank-k operations
 //
 //	C = alpha * A * Aᵀ + beta * C  if tA == blas.NoTrans
 //	C = alpha * Aᵀ * A + beta * C  if tA == blas.Trans or tA == blas.ConjTrans
 //
 // where A is an n×k or k×n matrix, C is an n×n symmetric matrix, and alpha and
 // beta are scalars.
-func Dsyrk(ul blas.Uplo, tA blas.Transpose, n, k int, alpha float64, a []float64, lda int, beta float64, c []float64, ldc int) {
+func Syrk(ul blas.Uplo, tA blas.Transpose, n, k int, alpha float64, a []float64, lda int, beta float64, c []float64, ldc int) {
 	if ul != blas.Lower && ul != blas.Upper {
 		panic(blas.ErrBadUplo)
 	}
@@ -996,14 +996,14 @@ func Dsyrk(ul blas.Uplo, tA blas.Transpose, n, k int, alpha float64, a []float64
 	}
 }
 
-// Dsyr2k performs one of the symmetric rank 2k operations
+// Syr2k performs one of the symmetric rank 2k operations
 //
 //	C = alpha * A * Bᵀ + alpha * B * Aᵀ + beta * C  if tA == blas.NoTrans
 //	C = alpha * Aᵀ * B + alpha * Bᵀ * A + beta * C  if tA == blas.Trans or tA == blas.ConjTrans
 //
 // where A and B are n×k or k×n matrices, C is an n×n symmetric matrix, and
 // alpha and beta are scalars.
-func Dsyr2k(ul blas.Uplo, tA blas.Transpose, n, k int, alpha float64, a []float64, lda int, b []float64, ldb int, beta float64, c []float64, ldc int) {
+func Syr2k(ul blas.Uplo, tA blas.Transpose, n, k int, alpha float64, a []float64, lda int, b []float64, ldb int, beta float64, c []float64, ldc int) {
 	if ul != blas.Lower && ul != blas.Upper {
 		panic(blas.ErrBadUplo)
 	}

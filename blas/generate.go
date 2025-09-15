@@ -21,12 +21,7 @@ var replacements = []struct {
 
 	// Import replacements (before other replacements)
 	{`"github.com/qntx/gomat/internal/mat/f64"`, `"github.com/qntx/gomat/internal/mat/f32"`, false},
-	{`import \(\s*"math"`, `import (\s*math "github.com/qntx/gomat/internal/math32"`, true},
 	{`"math"`, `math "github.com/qntx/gomat/internal/math32"`, false},
-
-	// Function name prefixes (D -> S, but keep I prefix for integer functions)
-	{`func D([a-z])`, `func S$1`, true},
-	{`func I([a-z])`, `func I$1`, true}, // Keep I prefix for integer functions like Idamax -> Isamax
 
 	// BLAS parameter types
 	{"blas.DrotmParams", "blas.SrotmParams", false},
@@ -56,8 +51,8 @@ var replacements = []struct {
 
 func main() {
 	// Source and destination directories
-	srcDir := "../blas64"
-	dstDir := "."
+	srcDir := "blas64"
+	dstDir := "blas32"
 
 	// Files to generate
 	files := []string{"level1.go", "level2.go", "level3.go"}
