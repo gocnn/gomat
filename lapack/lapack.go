@@ -197,74 +197,74 @@ const (
 
 // Float32 defines the public float32 LAPACK API supported by gonum/lapack.
 type Float32 interface {
-	Sgecon(norm MatrixNorm, n int, a []float32, lda int, anorm float32, work []float32, iwork []int) float32
-	Sgeev(jobvl LeftEVJob, jobvr RightEVJob, n int, a []float32, lda int, wr, wi []float32, vl []float32, ldvl int, vr []float32, ldvr int, work []float32, lwork int) (first int)
-	Sgels(trans blas.Transpose, m, n, nrhs int, a []float32, lda int, b []float32, ldb int, work []float32, lwork int) bool
-	Sgelqf(m, n int, a []float32, lda int, tau, work []float32, lwork int)
-	Sgeqp3(m, n int, a []float32, lda int, jpvt []int, tau, work []float32, lwork int)
-	Sgeqrf(m, n int, a []float32, lda int, tau, work []float32, lwork int)
-	Sgesvd(jobU, jobVT SVDJob, m, n int, a []float32, lda int, s, u []float32, ldu int, vt []float32, ldvt int, work []float32, lwork int) (ok bool)
-	Sgetrf(m, n int, a []float32, lda int, ipiv []int) (ok bool)
-	Sgetri(n int, a []float32, lda int, ipiv []int, work []float32, lwork int) (ok bool)
-	Sgetrs(trans blas.Transpose, n, nrhs int, a []float32, lda int, ipiv []int, b []float32, ldb int)
-	Sggsvd3(jobU, jobV, jobQ GSVDJob, m, n, p int, a []float32, lda int, b []float32, ldb int, alpha, beta, u []float32, ldu int, v []float32, ldv int, q []float32, ldq int, work []float32, lwork int, iwork []int) (k, l int, ok bool)
-	Slantr(norm MatrixNorm, uplo blas.Uplo, diag blas.Diag, m, n int, a []float32, lda int, work []float32) float32
-	Slange(norm MatrixNorm, m, n int, a []float32, lda int, work []float32) float32
-	Slansy(norm MatrixNorm, uplo blas.Uplo, n int, a []float32, lda int, work []float32) float32
-	Slapmr(forward bool, m, n int, x []float32, ldx int, k []int)
-	Slapmt(forward bool, m, n int, x []float32, ldx int, k []int)
-	Sorgqr(m, n, k int, a []float32, lda int, tau, work []float32, lwork int)
-	Sormqr(side blas.Side, trans blas.Transpose, m, n, k int, a []float32, lda int, tau, c []float32, ldc int, work []float32, lwork int)
-	Sorglq(m, n, k int, a []float32, lda int, tau, work []float32, lwork int)
-	Sormlq(side blas.Side, trans blas.Transpose, m, n, k int, a []float32, lda int, tau, c []float32, ldc int, work []float32, lwork int)
-	Spbcon(uplo blas.Uplo, n, kd int, ab []float32, ldab int, anorm float32, work []float32, iwork []int) float32
-	Spbtrf(uplo blas.Uplo, n, kd int, ab []float32, ldab int) (ok bool)
-	Spbtrs(uplo blas.Uplo, n, kd, nrhs int, ab []float32, ldab int, b []float32, ldb int)
-	Spocon(uplo blas.Uplo, n int, a []float32, lda int, anorm float32, work []float32, iwork []int) float32
-	Spotrf(ul blas.Uplo, n int, a []float32, lda int) (ok bool)
-	Spotri(ul blas.Uplo, n int, a []float32, lda int) (ok bool)
-	Spotrs(ul blas.Uplo, n, nrhs int, a []float32, lda int, b []float32, ldb int)
-	Spstrf(uplo blas.Uplo, n int, a []float32, lda int, piv []int, tol float32, work []float32) (rank int, ok bool)
-	Ssyev(jobz EVJob, uplo blas.Uplo, n int, a []float32, lda int, w, work []float32, lwork int) (ok bool)
-	Stbtrs(uplo blas.Uplo, trans blas.Transpose, diag blas.Diag, n, kd, nrhs int, a []float32, lda int, b []float32, ldb int) (ok bool)
-	Strcon(norm MatrixNorm, uplo blas.Uplo, diag blas.Diag, n int, a []float32, lda int, work []float32, iwork []int) float32
-	Strtri(uplo blas.Uplo, diag blas.Diag, n int, a []float32, lda int) (ok bool)
-	Strtrs(uplo blas.Uplo, trans blas.Transpose, diag blas.Diag, n, nrhs int, a []float32, lda int, b []float32, ldb int) (ok bool)
+	Gecon(norm MatrixNorm, n int, a []float32, lda int, anorm float32, work []float32, iwork []int) float32
+	Geev(jobvl LeftEVJob, jobvr RightEVJob, n int, a []float32, lda int, wr, wi []float32, vl []float32, ldvl int, vr []float32, ldvr int, work []float32, lwork int) (first int)
+	Gels(trans blas.Transpose, m, n, nrhs int, a []float32, lda int, b []float32, ldb int, work []float32, lwork int) bool
+	Gelqf(m, n int, a []float32, lda int, tau, work []float32, lwork int)
+	Geqp3(m, n int, a []float32, lda int, jpvt []int, tau, work []float32, lwork int)
+	Geqrf(m, n int, a []float32, lda int, tau, work []float32, lwork int)
+	Gesvd(jobU, jobVT SVDJob, m, n int, a []float32, lda int, s, u []float32, ldu int, vt []float32, ldvt int, work []float32, lwork int) (ok bool)
+	Getrf(m, n int, a []float32, lda int, ipiv []int) (ok bool)
+	Getri(n int, a []float32, lda int, ipiv []int, work []float32, lwork int) (ok bool)
+	Getrs(trans blas.Transpose, n, nrhs int, a []float32, lda int, ipiv []int, b []float32, ldb int)
+	Ggsvd3(jobU, jobV, jobQ GSVDJob, m, n, p int, a []float32, lda int, b []float32, ldb int, alpha, beta, u []float32, ldu int, v []float32, ldv int, q []float32, ldq int, work []float32, lwork int, iwork []int) (k, l int, ok bool)
+	Lantr(norm MatrixNorm, uplo blas.Uplo, diag blas.Diag, m, n int, a []float32, lda int, work []float32) float32
+	Lange(norm MatrixNorm, m, n int, a []float32, lda int, work []float32) float32
+	Lansy(norm MatrixNorm, uplo blas.Uplo, n int, a []float32, lda int, work []float32) float32
+	Lapmr(forward bool, m, n int, x []float32, ldx int, k []int)
+	Lapmt(forward bool, m, n int, x []float32, ldx int, k []int)
+	Orgqr(m, n, k int, a []float32, lda int, tau, work []float32, lwork int)
+	Ormqr(side blas.Side, trans blas.Transpose, m, n, k int, a []float32, lda int, tau, c []float32, ldc int, work []float32, lwork int)
+	Orglq(m, n, k int, a []float32, lda int, tau, work []float32, lwork int)
+	Ormlq(side blas.Side, trans blas.Transpose, m, n, k int, a []float32, lda int, tau, c []float32, ldc int, work []float32, lwork int)
+	Pbcon(uplo blas.Uplo, n, kd int, ab []float32, ldab int, anorm float32, work []float32, iwork []int) float32
+	Pbtrf(uplo blas.Uplo, n, kd int, ab []float32, ldab int) (ok bool)
+	Pbtrs(uplo blas.Uplo, n, kd, nrhs int, ab []float32, ldab int, b []float32, ldb int)
+	Pocon(uplo blas.Uplo, n int, a []float32, lda int, anorm float32, work []float32, iwork []int) float32
+	Potrf(ul blas.Uplo, n int, a []float32, lda int) (ok bool)
+	Potri(ul blas.Uplo, n int, a []float32, lda int) (ok bool)
+	Potrs(ul blas.Uplo, n, nrhs int, a []float32, lda int, b []float32, ldb int)
+	Pstrf(uplo blas.Uplo, n int, a []float32, lda int, piv []int, tol float32, work []float32) (rank int, ok bool)
+	Syev(jobz EVJob, uplo blas.Uplo, n int, a []float32, lda int, w, work []float32, lwork int) (ok bool)
+	Tbtrs(uplo blas.Uplo, trans blas.Transpose, diag blas.Diag, n, kd, nrhs int, a []float32, lda int, b []float32, ldb int) (ok bool)
+	Trcon(norm MatrixNorm, uplo blas.Uplo, diag blas.Diag, n int, a []float32, lda int, work []float32, iwork []int) float32
+	Trtri(uplo blas.Uplo, diag blas.Diag, n int, a []float32, lda int) (ok bool)
+	Trtrs(uplo blas.Uplo, trans blas.Transpose, diag blas.Diag, n, nrhs int, a []float32, lda int, b []float32, ldb int) (ok bool)
 }
 
 // Float64 defines the public float64 LAPACK API supported by gonum/lapack.
 type Float64 interface {
-	Dgecon(norm MatrixNorm, n int, a []float64, lda int, anorm float64, work []float64, iwork []int) float64
-	Dgeev(jobvl LeftEVJob, jobvr RightEVJob, n int, a []float64, lda int, wr, wi []float64, vl []float64, ldvl int, vr []float64, ldvr int, work []float64, lwork int) (first int)
-	Dgels(trans blas.Transpose, m, n, nrhs int, a []float64, lda int, b []float64, ldb int, work []float64, lwork int) bool
-	Dgelqf(m, n int, a []float64, lda int, tau, work []float64, lwork int)
-	Dgeqp3(m, n int, a []float64, lda int, jpvt []int, tau, work []float64, lwork int)
-	Dgeqrf(m, n int, a []float64, lda int, tau, work []float64, lwork int)
-	Dgesvd(jobU, jobVT SVDJob, m, n int, a []float64, lda int, s, u []float64, ldu int, vt []float64, ldvt int, work []float64, lwork int) (ok bool)
-	Dgetrf(m, n int, a []float64, lda int, ipiv []int) (ok bool)
-	Dgetri(n int, a []float64, lda int, ipiv []int, work []float64, lwork int) (ok bool)
-	Dgetrs(trans blas.Transpose, n, nrhs int, a []float64, lda int, ipiv []int, b []float64, ldb int)
-	Dggsvd3(jobU, jobV, jobQ GSVDJob, m, n, p int, a []float64, lda int, b []float64, ldb int, alpha, beta, u []float64, ldu int, v []float64, ldv int, q []float64, ldq int, work []float64, lwork int, iwork []int) (k, l int, ok bool)
-	Dlantr(norm MatrixNorm, uplo blas.Uplo, diag blas.Diag, m, n int, a []float64, lda int, work []float64) float64
-	Dlange(norm MatrixNorm, m, n int, a []float64, lda int, work []float64) float64
-	Dlansy(norm MatrixNorm, uplo blas.Uplo, n int, a []float64, lda int, work []float64) float64
-	Dlapmr(forward bool, m, n int, x []float64, ldx int, k []int)
-	Dlapmt(forward bool, m, n int, x []float64, ldx int, k []int)
-	Dorgqr(m, n, k int, a []float64, lda int, tau, work []float64, lwork int)
-	Dormqr(side blas.Side, trans blas.Transpose, m, n, k int, a []float64, lda int, tau, c []float64, ldc int, work []float64, lwork int)
-	Dorglq(m, n, k int, a []float64, lda int, tau, work []float64, lwork int)
-	Dormlq(side blas.Side, trans blas.Transpose, m, n, k int, a []float64, lda int, tau, c []float64, ldc int, work []float64, lwork int)
-	Dpbcon(uplo blas.Uplo, n, kd int, ab []float64, ldab int, anorm float64, work []float64, iwork []int) float64
-	Dpbtrf(uplo blas.Uplo, n, kd int, ab []float64, ldab int) (ok bool)
-	Dpbtrs(uplo blas.Uplo, n, kd, nrhs int, ab []float64, ldab int, b []float64, ldb int)
-	Dpocon(uplo blas.Uplo, n int, a []float64, lda int, anorm float64, work []float64, iwork []int) float64
-	Dpotrf(ul blas.Uplo, n int, a []float64, lda int) (ok bool)
-	Dpotri(ul blas.Uplo, n int, a []float64, lda int) (ok bool)
-	Dpotrs(ul blas.Uplo, n, nrhs int, a []float64, lda int, b []float64, ldb int)
-	Dpstrf(uplo blas.Uplo, n int, a []float64, lda int, piv []int, tol float64, work []float64) (rank int, ok bool)
-	Dsyev(jobz EVJob, uplo blas.Uplo, n int, a []float64, lda int, w, work []float64, lwork int) (ok bool)
-	Dtbtrs(uplo blas.Uplo, trans blas.Transpose, diag blas.Diag, n, kd, nrhs int, a []float64, lda int, b []float64, ldb int) (ok bool)
-	Dtrcon(norm MatrixNorm, uplo blas.Uplo, diag blas.Diag, n int, a []float64, lda int, work []float64, iwork []int) float64
-	Dtrtri(uplo blas.Uplo, diag blas.Diag, n int, a []float64, lda int) (ok bool)
-	Dtrtrs(uplo blas.Uplo, trans blas.Transpose, diag blas.Diag, n, nrhs int, a []float64, lda int, b []float64, ldb int) (ok bool)
+	Gecon(norm MatrixNorm, n int, a []float64, lda int, anorm float64, work []float64, iwork []int) float64
+	Geev(jobvl LeftEVJob, jobvr RightEVJob, n int, a []float64, lda int, wr, wi []float64, vl []float64, ldvl int, vr []float64, ldvr int, work []float64, lwork int) (first int)
+	Gels(trans blas.Transpose, m, n, nrhs int, a []float64, lda int, b []float64, ldb int, work []float64, lwork int) bool
+	Gelqf(m, n int, a []float64, lda int, tau, work []float64, lwork int)
+	Geqp3(m, n int, a []float64, lda int, jpvt []int, tau, work []float64, lwork int)
+	Geqrf(m, n int, a []float64, lda int, tau, work []float64, lwork int)
+	Gesvd(jobU, jobVT SVDJob, m, n int, a []float64, lda int, s, u []float64, ldu int, vt []float64, ldvt int, work []float64, lwork int) (ok bool)
+	Getrf(m, n int, a []float64, lda int, ipiv []int) (ok bool)
+	Getri(n int, a []float64, lda int, ipiv []int, work []float64, lwork int) (ok bool)
+	Getrs(trans blas.Transpose, n, nrhs int, a []float64, lda int, ipiv []int, b []float64, ldb int)
+	Ggsvd3(jobU, jobV, jobQ GSVDJob, m, n, p int, a []float64, lda int, b []float64, ldb int, alpha, beta, u []float64, ldu int, v []float64, ldv int, q []float64, ldq int, work []float64, lwork int, iwork []int) (k, l int, ok bool)
+	Lantr(norm MatrixNorm, uplo blas.Uplo, diag blas.Diag, m, n int, a []float64, lda int, work []float64) float64
+	Lange(norm MatrixNorm, m, n int, a []float64, lda int, work []float64) float64
+	Lansy(norm MatrixNorm, uplo blas.Uplo, n int, a []float64, lda int, work []float64) float64
+	Lapmr(forward bool, m, n int, x []float64, ldx int, k []int)
+	Lapmt(forward bool, m, n int, x []float64, ldx int, k []int)
+	Orgqr(m, n, k int, a []float64, lda int, tau, work []float64, lwork int)
+	Ormqr(side blas.Side, trans blas.Transpose, m, n, k int, a []float64, lda int, tau, c []float64, ldc int, work []float64, lwork int)
+	Orglq(m, n, k int, a []float64, lda int, tau, work []float64, lwork int)
+	Ormlq(side blas.Side, trans blas.Transpose, m, n, k int, a []float64, lda int, tau, c []float64, ldc int, work []float64, lwork int)
+	Pbcon(uplo blas.Uplo, n, kd int, ab []float64, ldab int, anorm float64, work []float64, iwork []int) float64
+	Pbtrf(uplo blas.Uplo, n, kd int, ab []float64, ldab int) (ok bool)
+	Pbtrs(uplo blas.Uplo, n, kd, nrhs int, ab []float64, ldab int, b []float64, ldb int)
+	Pocon(uplo blas.Uplo, n int, a []float64, lda int, anorm float64, work []float64, iwork []int) float64
+	Potrf(ul blas.Uplo, n int, a []float64, lda int) (ok bool)
+	Potri(ul blas.Uplo, n int, a []float64, lda int) (ok bool)
+	Potrs(ul blas.Uplo, n, nrhs int, a []float64, lda int, b []float64, ldb int)
+	Pstrf(uplo blas.Uplo, n int, a []float64, lda int, piv []int, tol float64, work []float64) (rank int, ok bool)
+	Syev(jobz EVJob, uplo blas.Uplo, n int, a []float64, lda int, w, work []float64, lwork int) (ok bool)
+	Tbtrs(uplo blas.Uplo, trans blas.Transpose, diag blas.Diag, n, kd, nrhs int, a []float64, lda int, b []float64, ldb int) (ok bool)
+	Trcon(norm MatrixNorm, uplo blas.Uplo, diag blas.Diag, n int, a []float64, lda int, work []float64, iwork []int) float64
+	Trtri(uplo blas.Uplo, diag blas.Diag, n int, a []float64, lda int) (ok bool)
+	Trtrs(uplo blas.Uplo, trans blas.Transpose, diag blas.Diag, n, nrhs int, a []float64, lda int, b []float64, ldb int) (ok bool)
 }
