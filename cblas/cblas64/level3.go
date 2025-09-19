@@ -1,7 +1,6 @@
 package cblas64
 
 /*
-#cgo CFLAGS: -g -O2
 #include "../cblas.h"
 */
 import "C"
