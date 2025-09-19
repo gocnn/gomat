@@ -41,8 +41,8 @@ func main() {
 	srcDir := "cblas64"
 	dstDir := "cblas32"
 
-	// Files to generate
-	files := []string{"level1.go", "level2.go", "level3.go"}
+	// Files to generate - now includes cblas.go
+	files := []string{"cblas.go", "level1.go", "level2.go", "level3.go"}
 
 	for _, file := range files {
 		srcPath := filepath.Join(srcDir, file)
@@ -79,4 +79,7 @@ func main() {
 
 		fmt.Printf("Successfully generated %s\n", dstPath)
 	}
+
+	fmt.Println("\nCode generation completed successfully!")
+	fmt.Printf("Generated %d files in %s directory\n", len(files), dstDir)
 }
