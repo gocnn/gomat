@@ -124,7 +124,7 @@ func Copy(n int, x []float64, incX int, y []float64, incY int) {
 	if incY < 0 {
 		iy = (-n + 1) * incY
 	}
-	for i := 0; i < n; i++ {
+	for range n {
 		y[iy] = x[ix]
 		ix += incX
 		iy += incY
