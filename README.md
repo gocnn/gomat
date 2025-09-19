@@ -1,6 +1,8 @@
 # gomat
 
-High-performance **BLAS** and **LAPACK** library implemented in Go with assembly optimizations and SSE instruction sets. Built upon proven [Gonum](https://www.gonum.org/) algorithms, focused on single-function matrix operators with **row-major storage** (C-style) instead of traditional column-major format used by OpenBLAS.
+High-performance **BLAS** and **LAPACK** library implemented in Go with assembly optimizations and Intel MKL/OpenBLAS acceleration support. Built upon proven [Gonum](https://www.gonum.org/) algorithms, focused on single-function matrix operators with **row-major storage** (C-style).
+
+Optional external library acceleration: [CBLAS](cblas/README.md) | [CLAPACK](clapack/README.md)
 
 ## Install
 
