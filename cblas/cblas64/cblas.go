@@ -8,6 +8,5 @@ package cblas64
 #cgo linux LDFLAGS: -L/usr/lib/x86_64-linux-gnu/openblas-pthread -lopenblas
 #cgo linux LDFLAGS: -L/usr/lib/x86_64-linux-gnu -lopenblas
 #cgo darwin LDFLAGS: -framework Accelerate
-#cgo darwin LDFLAGS: -L/opt/homebrew/opt/openblas -lopenblas
 */
 import "C"
