@@ -8,7 +8,7 @@ import "C"
 import (
 	_ "unsafe"
 
-	"github.com/qntx/gomat/blas"
+	"github.com/gocnn/gomat/blas"
 )
 
 // Gemm performs one of the matrix-matrix operations

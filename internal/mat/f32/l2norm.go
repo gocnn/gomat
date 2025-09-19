@@ -1,6 +1,6 @@
 package f32
 
-import "github.com/qntx/gomat/internal/math32"
+import "github.com/gocnn/gomat/internal/math32"
 
 // L2NormUnitary is the level 2 norm of x.
 func L2NormUnitary(x []float32) (sum float32) {

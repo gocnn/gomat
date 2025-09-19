@@ -5,10 +5,10 @@
 package blas32
 
 import (
-	math "github.com/qntx/gomat/internal/math32"
+	math "github.com/gocnn/gomat/internal/math32"
 
-	"github.com/qntx/gomat/blas"
-	"github.com/qntx/gomat/internal/mat/f32"
+	"github.com/gocnn/gomat/blas"
+	"github.com/gocnn/gomat/internal/mat/f32"
 )
 
 // Axpy adds alpha times x to y

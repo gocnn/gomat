@@ -9,7 +9,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/qntx/gomat/blas"
+	"github.com/gocnn/gomat/blas"
 )
 
 // y[i] += alpha * x[i] for all i

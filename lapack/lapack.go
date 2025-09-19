@@ -1,6 +1,6 @@
 package lapack
 
-import "github.com/qntx/gomat/blas"
+import "github.com/gocnn/gomat/blas"
 
 // Direct specifies the direction of the multiplication for the Householder matrix.
 type Direct byte

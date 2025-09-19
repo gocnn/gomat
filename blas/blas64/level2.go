@@ -5,8 +5,8 @@
 package blas64
 
 import (
-	"github.com/qntx/gomat/blas"
-	"github.com/qntx/gomat/internal/mat/f64"
+	"github.com/gocnn/gomat/blas"
+	"github.com/gocnn/gomat/internal/mat/f64"
 )
 
 // Gemv computes

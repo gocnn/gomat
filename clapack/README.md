@@ -23,7 +23,7 @@ export CGO_LDFLAGS="-L/path/to/mkl/lib -lmkl_rt"
 ## Usage
 
 ```go
-import "github.com/qntx/gomat/clapack/clapack64"
+import "github.com/gocnn/gomat/clapack/clapack64"
 
 // LU factorization: A = P*L*U
 clapack64.Getrf(m, n, A, lda, ipiv)

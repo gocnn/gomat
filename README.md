@@ -7,7 +7,7 @@ Optional external library acceleration: [CBLAS](cblas/README.md) | [CLAPACK](cla
 ## Install
 
 ```bash
-go get github.com/qntx/gomat
+go get github.com/gocnn/gomat
 ```
 
 ## License

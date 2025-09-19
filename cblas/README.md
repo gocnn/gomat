@@ -23,7 +23,7 @@ export CGO_LDFLAGS="-L/path/to/mkl/lib -lmkl_rt"
 ## Usage
 
 ```go
-import "github.com/qntx/gomat/cblas/cblas64"
+import "github.com/gocnn/gomat/cblas/cblas64"
 
 // Matrix-vector multiplication: y = αAx + βy
 cblas64.Gemv(blas.NoTrans, m, n, α, A, lda, x, incX, β, y, incY)

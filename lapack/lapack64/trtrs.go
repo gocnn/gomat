@@ -5,9 +5,9 @@
 package lapack64
 
 import (
-	"github.com/qntx/gomat/blas"
-	"github.com/qntx/gomat/blas/blas64"
-	"github.com/qntx/gomat/lapack"
+	"github.com/gocnn/gomat/blas"
+	"github.com/gocnn/gomat/blas/blas64"
+	"github.com/gocnn/gomat/lapack"
 )
 
 // Trtrs solves a triangular system of the form A * X = B or Aᵀ * X = B. Trtrs

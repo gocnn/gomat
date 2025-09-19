@@ -20,8 +20,8 @@ var replacements = []struct {
 	{"package blas64", "package blas32", false},
 
 	// Import replacements (before other replacements)
-	{`"github.com/qntx/gomat/internal/mat/f64"`, `"github.com/qntx/gomat/internal/mat/f32"`, false},
-	{`"math"`, `math "github.com/qntx/gomat/internal/math32"`, false},
+	{`"github.com/gocnn/gomat/internal/mat/f64"`, `"github.com/gocnn/gomat/internal/mat/f32"`, false},
+	{`"math"`, `math "github.com/gocnn/gomat/internal/math32"`, false},
 
 	// BLAS parameter types
 	{"blas.DrotmParams", "blas.SrotmParams", false},

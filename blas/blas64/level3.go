@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/qntx/gomat/blas"
-	"github.com/qntx/gomat/internal/mat/f64"
+	"github.com/gocnn/gomat/blas"
+	"github.com/gocnn/gomat/internal/mat/f64"
 )
 
 // Gemm performs one of the matrix-matrix operations

@@ -7,8 +7,8 @@ package blas64
 import (
 	"math"
 
-	"github.com/qntx/gomat/blas"
-	"github.com/qntx/gomat/internal/mat/f64"
+	"github.com/gocnn/gomat/blas"
+	"github.com/gocnn/gomat/internal/mat/f64"
 )
 
 // Axpy adds alpha times x to y
