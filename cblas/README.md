@@ -28,25 +28,25 @@ Go bindings to external BLAS libraries for maximum performance.
 
 2. Common installation methods:
 
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get install libopenblas-dev
-   
-   # CentOS/RHEL/Fedora
-   sudo yum install openblas-devel
-   # or
-   sudo dnf install openblas-devel
-   
-   # From source
-   git clone https://github.com/xianyi/OpenBLAS.git
-   cd OpenBLAS
-   make
-   sudo make install
-   ```
+    ```bash
+    # Ubuntu/Debian
+    sudo apt-get install libopenblas-dev
+
+    # CentOS/RHEL/Fedora
+    sudo dnf install openblas-devel
+
+    # OpenSUSE/SLE
+    sudo zypper install openblas-devel
+
+    # Arch/Manjaro/Antergos
+    sudo pacman -S openblas
+    ```
+
+3. No additional configuration needed - the library is automatically detected.
 
 ### macOS (Apple Accelerate)
 
-No installation required! Apple Accelerate framework is built into macOS and provides optimized BLAS routines, especially for Apple Silicon (M1/M2) processors.
+No installation required! Apple Accelerate framework is built into macOS and provides optimized BLAS routines, especially for Apple Silicon processors.
 
 ## Custom Configuration
 
